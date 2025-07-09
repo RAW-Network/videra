@@ -4,18 +4,9 @@ An ultra-modern, professional-grade video compression tool, built for performanc
 
 ---
 
-# ⚠️ Security Notice
-
-🚧 Work in Progress — This project is still in active development and not fully tested yet
-
-No formal security review has been conducted. Security-sensitive components such as user input handling, file storage, and endpoints may be vulnerable or improperly validated.
-Use only in private, trusted environments. Avoid deploying to production until the project is considered stable and security-tested.
-
----
-
 ## 🔍 Preview
 
-![App Preview]()
+<img src="https://files.catbox.moe/0f3iy9.gif" alt="App Preview" width="600">
 
 ---
 

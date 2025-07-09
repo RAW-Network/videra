@@ -1,6 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
     const appContainer = document.getElementById('app-container');
-
     const uploadViewTemplate = document.getElementById('upload-view-template');
     const settingsViewTemplate = document.getElementById('settings-view-template');
     const progressViewTemplate = document.getElementById('progress-view-template');
@@ -10,6 +9,24 @@ document.addEventListener('DOMContentLoaded', () => {
     let eventSource = null;
     let maxUploadSizeBytes = 0;
     let maxUploadSizeString = '';
+
+    function showNotification(message, duration = 3000) {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+            notification.addEventListener('transitionend', () => {
+                notification.remove();
+            });
+        }, duration);
+    }
 
     function renderView(template) {
         const content = template.content.cloneNode(true);
@@ -70,8 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const maxSizeInput = document.getElementById('maxSize');
             const targetSize = parseFloat(maxSizeInput.value);
+
             if (isNaN(targetSize) || targetSize <= 0) {
-                alert('Please enter a valid target size');
+                showNotification('Please enter a valid target size');
                 compressBtn.disabled = false;
                 return;
             }
@@ -81,10 +99,20 @@ document.addEventListener('DOMContentLoaded', () => {
         backBtn.addEventListener('click', setupUploadView);
     }
 
-    function setupProgressView(initialText = "Uploading") {
+    function setupProgressView(initialText = "Uploading...") {
         renderView(progressViewTemplate);
         const progressText = document.getElementById('progress-text');
         progressText.textContent = initialText;
+
+        const cancelBtn = document.getElementById('cancelBtn');
+        cancelBtn.addEventListener('click', () => {
+            const jobId = cancelBtn.dataset.jobId;
+            if (!jobId) return;
+            fetch(`/api/v1/jobs/${jobId}/cancel`, { method: 'POST' });
+            setupDoneView(false, 'Your compression has been cancelled.');
+            cancelBtn.disabled = true;
+            cancelBtn.textContent = 'Cancelling...';
+        });
     }
 
     function updateProgress(percent, text) {
@@ -97,6 +125,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupDoneView(isSuccess, message, downloadUrl = null) {
+        if(eventSource) {
+            eventSource.close();
+            eventSource = null;
+        }
+
         renderView(doneViewTemplate);
         
         const doneIcon = document.querySelector('.done-icon');
@@ -134,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startCompression(targetSize) {
-        setupProgressView();
+        setupProgressView("Uploading...");
         const formData = new FormData();
         formData.append('video', selectedFile);
         formData.append('maxSize', targetSize);
@@ -149,6 +182,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (xhr.status === 200) {
                 try {
                     const data = JSON.parse(xhr.responseText);
+                    const cancelBtn = document.getElementById('cancelBtn');
+                    if (cancelBtn) {
+                        cancelBtn.dataset.jobId = data.jobId;
+                    }
                     startProgressStream(data.jobId);
                 } catch (error) {
                     setupDoneView(false, 'Failed to parse server response');
@@ -184,8 +221,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         eventSource.onerror = () => {
-            eventSource.close();
-            setupDoneView(false, 'Connection to the server was lost');
+            if(eventSource) {
+                eventSource.close();
+            }
+            if (!document.getElementById('done-view')) {
+                setupDoneView(false, 'Connection to the server was lost');
+            }
         };
     }
 

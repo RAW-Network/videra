@@ -5,6 +5,19 @@ const crypto = require('crypto');
 const os = require('os');
 const config = require('../config');
 
+function sanitizeFilename(originalName, fallbackName = 'video') {
+    const extension = (path.extname(originalName) || '.mp4').toLowerCase();
+    let baseName = path.basename(originalName, extension);
+    const sanitizedBase = baseName.replace(/[^a-zA-Z0-9 _-]/g, '');
+    const finalBase = sanitizedBase.replace(/\s+/g, '_').slice(0, 100);
+
+    if (!finalBase) {
+        return `${fallbackName}${extension}`;
+    }
+
+    return `${finalBase}_videra-compress${extension}`;
+}
+
 const jobs = {};
 
 function createCompressionJob(jobData) {
@@ -40,9 +53,8 @@ function getJobStream(jobId) {
                 }
 
                 const nullDevice = os.platform() === 'win32' ? 'NUL' : '/dev/null';
-                const passlogFile = path.join(config.paths.logs, id);
-                const sanitizedName = path.basename(originalName, path.extname(originalName)).replace(/[^a-zA-Z0-9_.-]/g, '') || 'video';
-                const outputFilename = `${sanitizedName}_videra-compress.mp4`;
+                const passlogPrefix = path.join(config.paths.logs, id);
+                const outputFilename = sanitizeFilename(originalName, id);
                 const outputPath = path.join(config.paths.compressed, outputFilename);
 
                 const baseArgs = ['-i', inputPath];
@@ -50,8 +62,8 @@ function getJobStream(jobId) {
                     baseArgs.unshift('-vaapi_device', '/dev/dri/renderD128', '-hwaccel', 'vaapi', '-hwaccel_output_format', 'vaapi');
                 }
 
-                const pass1Args = [ ...baseArgs, '-c:v', encoderSettings.codec, '-b:v', `${videoBitrate}k`, '-pass', '1', '-passlogfile', passlogFile, '-an', '-f', 'mp4', '-y', nullDevice ];
-                const pass2Args = [ ...baseArgs, '-c:v', encoderSettings.codec, '-b:v', `${videoBitrate}k`, '-pass', '2', '-passlogfile', passlogFile, '-c:a', 'aac', '-b:a', `${audioBitrate}k`, '-y', outputPath ];
+                const pass1Args = [ ...baseArgs, '-c:v', encoderSettings.codec, '-b:v', `${videoBitrate}k`, '-pass', '1', '-passlogfile', passlogPrefix, '-an', '-f', 'mp4', '-y', nullDevice ];
+                const pass2Args = [ ...baseArgs, '-c:v', encoderSettings.codec, '-b:v', `${videoBitrate}k`, '-pass', '2', '-passlogfile', passlogPrefix, '-c:a', 'aac', '-b:a', `${audioBitrate}k`, '-y', outputPath ];
 
                 console.log(`[Job Progress] ID: ${id}, Starting Pass 1`);
                 sendEvent({ type: 'progress', value: 0, text: 'Analyzing - Pass 1 of 2' });
@@ -92,19 +104,26 @@ function getJobStream(jobId) {
 
 async function cleanupJob(jobId) {
     const currentJob = jobs[jobId];
-    if (!currentJob) return;
+    if (!currentJob || currentJob.status === 'cleaning') {
+        return;
+    }
+
+    currentJob.status = 'cleaning';
+    console.log(`[Job Cleanup] Starting cleanup for job ${jobId}`);
+
+    const logPrefix = path.join(config.paths.logs, jobId);
+    const logFile = `${logPrefix}-0.log`;
+    const mbtreeFile = `${logPrefix}-0.log.mbtree`;
 
     try {
-        const logFiles = await fsp.readdir(config.paths.logs);
-        for (const logFile of logFiles) {
-            if (logFile.startsWith(jobId)) {
-                await fsp.unlink(path.join(config.paths.logs, logFile));
-            }
-        }
+        await fsp.unlink(logFile).catch(() => {});
+        await fsp.unlink(mbtreeFile).catch(() => {});
     } catch (error) {
-        console.error(`[Job Cleanup] Error cleaning log files for job ${jobId}:`, error);
+        if (error.code !== 'ENOENT') {
+            console.error(`[Job Cleanup] Error cleaning log files for job ${jobId}:`, error);
+        }
     }
-    
+
     fsp.unlink(currentJob.inputPath).catch(() => {});
 
     if (currentJob.ffmpegProcess) {
@@ -118,7 +137,10 @@ async function cleanupJob(jobId) {
 function runFfmpeg(args, job, sendEvent, progressOffset = 0) {
     return new Promise((resolve, reject) => {
         console.log(`[FFmpeg] Job ${job.id} spawning command: ffmpeg ${args.join(' ')}`);
-        const ffmpeg = spawn('ffmpeg', args);
+
+        const ffmpegArgs = ['-progress', 'pipe:2', ...args];
+        const ffmpeg = spawn('ffmpeg', ffmpegArgs);
+
         job.ffmpegProcess = ffmpeg;
 
         let stderrOutput = '';
@@ -126,13 +148,14 @@ function runFfmpeg(args, job, sendEvent, progressOffset = 0) {
 
         ffmpeg.stderr.on('data', (data) => {
             stderrOutput += data.toString();
-            const timeMatch = stderrOutput.match(/time=(\d{2}):(\d{2}):(\d{2})\.(\d{2})/g);
-            if (timeMatch) {
-                const lastTime = timeMatch[timeMatch.length - 1];
-                const timeParts = lastTime.match(/(\d{2}):(\d{2}):(\d{2})/);
-                const currentTime = (parseInt(timeParts[1]) * 3600) + (parseInt(timeParts[2]) * 60) + parseInt(timeParts[3]);
-                const passProgress = Math.min(100, (currentTime / job.totalDuration) * 100);
+
+            const progressMatch = stderrOutput.match(/frame=\s*([0-9]+)/g);
+            if (progressMatch && job.totalFrames > 0) {
+                const lastFrameMatch = progressMatch[progressMatch.length - 1];
+                const currentFrame = parseInt(lastFrameMatch.split('=')[1].trim(), 10);
+                const passProgress = Math.min(100, (currentFrame / job.totalFrames) * 100);
                 const totalProgress = Math.round(progressOffset + (passProgress / 2));
+
                 if (totalProgress > lastProgress) {
                     lastProgress = totalProgress;
                     sendEvent({ type: 'progress', value: totalProgress, text: 'Processing' });

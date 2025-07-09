@@ -54,7 +54,7 @@ services:
     environment:
       - MAX_VIDEO_UPLOAD_SIZE=1024M
       - FORCE_CPU_ENCODER=false
-      - TZ=Asia/Makassar
+      - TZ=UTC
     restart: unless-stopped
 ```
 

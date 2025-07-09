@@ -28,7 +28,7 @@ An ultra-modern, professional-grade video compression tool, built for performanc
 
 ## 🚀 Installation and Usage Guide
 
-Follow these steps to download and run the project on your machine.
+Follow these steps to download and run the project on your machine
 
 ### 🔧 Prerequisites
 
@@ -93,8 +93,8 @@ Customize the application using environment variables in `docker-compose.yml`
 | Variable                | Description                              | Default |
 | ----------------------- | ---------------------------------------- | ------- |
 | `MAX_VIDEO_UPLOAD_SIZE` | Maximum allowed size for uploads         | 1024M   |
-| `TZ`                    | Sets the container's timezone            | UTC     |
 | `FORCE_CPU_ENCODER`     | Set to `true` to force software encoding | false   |
+| `TZ`                    | Sets the container's timezone            | UTC     |
 
 Example:
 

@@ -54,7 +54,7 @@ services:
       - ./uploads:/uploads
       - ./logs:/logs
     environment:
-      - MAX_VIDEO_UPLOAD_SIZE=1024M
+      - MAX_VIDEO_UPLOAD_SIZE=1G
       - FORCE_CPU_ENCODER=false
       - TZ=UTC
     restart: unless-stopped
@@ -94,7 +94,7 @@ Customize the application using environment variables in `docker-compose.yml`
 
 | Variable                | Description                              | Default |
 | ----------------------- | ---------------------------------------- | ------- |
-| `MAX_VIDEO_UPLOAD_SIZE` | Maximum allowed size for uploads         | 1024M   |
+| `MAX_VIDEO_UPLOAD_SIZE` | Maximum allowed size for uploads         | 1G      |
 | `FORCE_CPU_ENCODER`     | Set to `true` to force software encoding | false   |
 | `TZ`                    | Sets the container's timezone            | UTC     |
 

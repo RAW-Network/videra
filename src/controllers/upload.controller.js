@@ -1,6 +1,8 @@
 const { createCompressionJob, getJobStream, cleanupJob } = require('../services/ffmpeg.service');
 const { spawn } = require('child_process');
 const fsp = require('fs/promises');
+const path = require('path');
+const config = require('../config');
 
 function getVideoMetadata(inputPath) {
     return new Promise((resolve, reject) => {
@@ -34,7 +36,7 @@ function getVideoMetadata(inputPath) {
                     const totalFrames = framesMatch ? parseInt(framesMatch[1], 10) : NaN;
 
                     if (isNaN(duration) || duration <= 0 || isNaN(totalFrames) || totalFrames <= 0) {
-                        reject(new Error('Could not determine valid video metadata (duration or frames).'));
+                        reject(new Error('Could not determine valid video metadata (duration or frames)'));
                     } else {
                         resolve({ duration, totalFrames });
                     }
@@ -52,37 +54,73 @@ function getVideoMetadata(inputPath) {
     });
 }
 
-async function handleUpload(req, res) {
-    if (!req.file) {
-        return res.status(400).json({ error: 'No video file was uploaded' });
+async function handleChunkUpload(req, res) {
+    try {
+        const { uploadId } = req.body;
+        const chunkPath = req.file.path;
+        
+        const tempUploadDir = path.join(config.paths.uploads, uploadId);
+        await fsp.mkdir(tempUploadDir, { recursive: true });
+
+        const newChunkPath = path.join(tempUploadDir, `${req.body.chunkNumber}.chunk`);
+        await fsp.rename(chunkPath, newChunkPath);
+
+        console.log(`[Chunk Upload] Received chunk ${req.body.chunkNumber}/${req.body.totalChunks} for upload ID: ${uploadId}`);
+        res.status(200).json({ message: `Chunk ${req.body.chunkNumber} received` });
+
+    } catch (error) {
+        console.error('[Chunk Upload Error]', error);
+        res.status(500).json({ error: 'Failed to process chunk' });
+    }
+}
+
+async function handleUploadComplete(req, res) {
+    const { totalChunks, uploadId, originalName, targetSizeMB } = req.body;
+    
+    if (!totalChunks || !uploadId || !originalName || !targetSizeMB) {
+        return res.status(400).json({ error: 'Missing required parameters for completing upload' });
     }
 
-    const targetSizeMB = parseFloat(req.body.maxSize);
-    if (isNaN(targetSizeMB) || targetSizeMB <= 0) {
-        return res.status(400).json({ error: 'Invalid target output size specified' });
-    }
+    const tempUploadDir = path.join(config.paths.uploads, uploadId);
+    const finalFilePath = path.join(config.paths.uploads, uploadId + path.extname(originalName));
 
     try {
-        const inputPath = req.file.path;
-        const { duration, totalFrames } = await getVideoMetadata(inputPath);
+        console.log(`[Upload Complete] Starting to merge ${totalChunks} chunks for ${uploadId}`);
+        
+        const writeStream = require('fs').createWriteStream(finalFilePath);
+        for (let i = 0; i < totalChunks; i++) {
+            const chunkPath = path.join(tempUploadDir, `${i}.chunk`);
+            const chunkBuffer = await fsp.readFile(chunkPath);
+            writeStream.write(chunkBuffer);
+            await fsp.unlink(chunkPath);
+        }
+        writeStream.end();
 
+        await new Promise((resolve, reject) => {
+            writeStream.on('finish', resolve);
+            writeStream.on('error', reject);
+        });
+        
+        await fsp.rmdir(tempUploadDir);
+        console.log(`[Upload Complete] File merged successfully: ${finalFilePath}`);
+        
+        const { duration, totalFrames } = await getVideoMetadata(finalFilePath);
         const jobData = {
-            inputPath,
+            inputPath: finalFilePath,
             totalDuration: duration,
             totalFrames,
-            targetSizeMB,
-            originalName: req.file.originalname,
+            targetSizeMB: parseFloat(targetSizeMB),
+            originalName,
         };
 
         const jobId = createCompressionJob(jobData);
-        console.log(`[Job Created] ID: ${jobId}, File: ${req.file.originalname}, Target Size: ${targetSizeMB}MB`);
+        console.log(`[Job Created] ID: ${jobId}, File: ${originalName}, Target Size: ${targetSizeMB}MB`);
         res.status(200).json({ jobId });
 
     } catch (err) {
-        console.error('[Upload Error]', err.message);
-        if (req.file) {
-            await fsp.unlink(req.file.path).catch(e => console.error("[File Cleanup Error]", e));
-        }
+        console.error('[Upload Complete Error]', err.message);
+        await fsp.rm(tempUploadDir, { recursive: true, force: true }).catch(e => console.error("[Cleanup Error]", e));
+        await fsp.unlink(finalFilePath).catch(e => console.error("[Cleanup Error]", e));
         res.status(500).json({ error: err.message });
     }
 }
@@ -129,7 +167,13 @@ function handleCancel(req, res) {
     
     cleanupJob(jobId);
     
-    res.status(200).json({ message: 'Job cancellation requested.' });
+    res.status(200).json({ message: 'Job cancellation requested' });
 }
 
-module.exports = { handleUpload, handleStream, handleCancel };
+
+module.exports = { 
+    handleChunkUpload,
+    handleUploadComplete,
+    handleStream, 
+    handleCancel 
+};

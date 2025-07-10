@@ -2,7 +2,7 @@ const path = require('path');
 
 const config = {
     port: process.env.PORT || 3000,
-    maxUploadSize: process.env.MAX_VIDEO_UPLOAD_SIZE || '1024M',
+    maxUploadSize: process.env.MAX_VIDEO_UPLOAD_SIZE || '1G',
     paths: {
         uploads: path.join(__dirname, '../../uploads'),
         compressed: path.join(__dirname, '../../compressed'),

@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const jobId = cancelBtn.dataset.jobId;
             if (!jobId) return;
             fetch(`/api/v1/jobs/${jobId}/cancel`, { method: 'POST' });
-            setupDoneView(false, 'Your compression has been cancelled.');
+            setupDoneView(false, 'Your compression has been cancelled');
             cancelBtn.disabled = true;
             cancelBtn.textContent = 'Cancelling...';
         });
@@ -167,43 +167,100 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function startCompression(targetSize) {
-        setupProgressView("Uploading...");
-        const formData = new FormData();
-        formData.append('video', selectedFile);
-        formData.append('maxSize', targetSize);
-
-        const xhr = new XMLHttpRequest();
-        xhr.upload.addEventListener('progress', e => {
-            if (e.lengthComputable) {
-                updateProgress(Math.round((e.loaded / e.total) * 100), 'Uploading');
+        if (!selectedFile) {
+            showNotification('No file selected');
+            return;
+        }
+    
+        setupProgressView("Preparing to upload...");
+    
+        const CHUNK_SIZE = 50 * 1024 * 1024;
+        const totalChunks = Math.ceil(selectedFile.size / CHUNK_SIZE);
+        const uploadId = 'upload-' + Date.now() + '-' + Math.random().toString(36).substring(2, 10);
+        
+        let chunkNumber = 0;
+    
+        function uploadNextChunk() {
+            if (chunkNumber >= totalChunks) {
+                completeUpload();
+                return;
             }
-        });
-        xhr.addEventListener('load', () => {
-            if (xhr.status === 200) {
-                try {
-                    const data = JSON.parse(xhr.responseText);
+    
+            const start = chunkNumber * CHUNK_SIZE;
+            const end = Math.min(start + CHUNK_SIZE, selectedFile.size);
+            const chunk = selectedFile.slice(start, end);
+    
+            const formData = new FormData();
+            formData.append('video', chunk, selectedFile.name);
+            formData.append('chunkNumber', chunkNumber);
+            formData.append('totalChunks', totalChunks);
+            formData.append('uploadId', uploadId);
+            formData.append('originalName', selectedFile.name);
+    
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/v1/upload/chunk', true);
+            
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    chunkNumber++;
+                    const uploadProgress = Math.round((chunkNumber / totalChunks) * 100);
+                    updateProgress(uploadProgress, 'Uploading');
+                    uploadNextChunk();
+                } else {
+                    try {
+                        const errorData = JSON.parse(xhr.responseText);
+                        setupDoneView(false, errorData.error || 'An error occurred while uploading a chunk');
+                    } catch (e) {
+                        setupDoneView(false, 'An unknown upload error occurred');
+                    }
+                }
+            };
+    
+            xhr.onerror = () => {
+                setupDoneView(false, 'A network error occurred during chunk upload');
+            };
+            
+            xhr.send(formData);
+        }
+        
+        function completeUpload() {
+            updateProgress(100, 'Finalizing upload');
+            
+            fetch('/api/v1/upload/complete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    totalChunks,
+                    uploadId,
+                    originalName: selectedFile.name,
+                    targetSizeMB: targetSize,
+                }),
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || 'Server error') });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.jobId) {
                     const cancelBtn = document.getElementById('cancelBtn');
                     if (cancelBtn) {
                         cancelBtn.dataset.jobId = data.jobId;
                     }
                     startProgressStream(data.jobId);
-                } catch (error) {
-                    setupDoneView(false, 'Failed to parse server response');
+                } else {
+                    setupDoneView(false, data.error || 'Failed to start compression.');
                 }
-            } else {
-                try {
-                    const errorData = JSON.parse(xhr.responseText);
-                    setupDoneView(false, errorData.error || 'An upload error occurred');
-                } catch (e) {
-                    setupDoneView(false, 'An upload error occurred');
-                }
-            }
-        });
-        xhr.addEventListener('error', () => {
-            setupDoneView(false, 'A network error occurred');
-        });
-        xhr.open('POST', '/api/v1/upload', true);
-        xhr.send(formData);
+            })
+            .catch((error) => {
+                setupDoneView(false, `An error occurred while finalizing the upload: ${error.message}`);
+            });
+        }
+    
+        uploadNextChunk();
     }
     
     function startProgressStream(jobId) {
@@ -232,6 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function parseSizeToBytes(sizeStr) {
         const size = parseFloat(sizeStr);
+        if (!sizeStr || isNaN(size)) return 0;
         const unit = sizeStr.toUpperCase().slice(-1);
         if (unit === 'G') return size * 1024 * 1024 * 1024;
         if (unit === 'M') return size * 1024 * 1024;

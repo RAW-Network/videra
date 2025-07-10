@@ -13,6 +13,11 @@ function getVideoMetadata(inputPath) {
         ];
 
         const ffprobe = spawn('ffprobe', ffprobeArgs);
+        const timeout = setTimeout(() => {
+            ffprobe.kill('SIGKILL');
+            reject(new Error('ffprobe process timed out after 30 seconds'));
+        }, 30000);
+
         let metadataOutput = '';
         let errorOutput = '';
 
@@ -25,6 +30,7 @@ function getVideoMetadata(inputPath) {
         });
 
         ffprobe.on('close', (code) => {
+            clearTimeout(timeout);
             if (code === 0) {
                 try {
                     const durationMatch = metadataOutput.match(/duration=([0-9.]+)/);
@@ -47,6 +53,7 @@ function getVideoMetadata(inputPath) {
         });
 
         ffprobe.on('error', (err) => {
+            clearTimeout(timeout);
             reject(new Error(`Failed to start ffprobe: ${err.message}`));
         });
     });
@@ -83,7 +90,10 @@ async function handleUpload(req, res) {
         if (req.file) {
             await fsp.unlink(req.file.path).catch(e => console.error("[File Cleanup Error]", e));
         }
-        res.status(500).json({ error: err.message });
+        const errorMessage = process.env.NODE_ENV === 'production' 
+            ? 'An unexpected error occurred during processing'
+            : err.message;
+        res.status(500).json({ error: errorMessage });
     }
 }
 
@@ -115,7 +125,10 @@ function handleStream(req, res) {
     runCompression(encoderSettings, sendEvent)
         .catch(err => {
             console.error(`[Job Failed] ID: ${jobId}, Reason:`, err.message);
-            sendEvent({ type: 'error', message: err.message });
+            const errorMessage = process.env.NODE_ENV === 'production' 
+                ? 'Compression failed due to a server error'
+                : err.message;
+            sendEvent({ type: 'error', message: errorMessage });
         })
         .finally(() => {
             cleanupJob(jobId);
@@ -129,7 +142,7 @@ function handleCancel(req, res) {
     
     cleanupJob(jobId);
     
-    res.status(200).json({ message: 'Job cancellation requested.' });
+    res.status(200).json({ message: 'Job cancellation requested' });
 }
 
 module.exports = { handleUpload, handleStream, handleCancel };

@@ -1,22 +1,27 @@
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const os = require('os');
 const config = require('../config');
 
 function getGpuVendor() {
     return new Promise((resolve) => {
         const platform = os.platform();
-        let command;
+        let command, args;
 
         if (platform === 'win32') {
-            command = 'powershell -command "Get-CimInstance -ClassName Win32_VideoController | Select-Object -ExpandProperty Name"';
+            command = 'powershell';
+            args = ['-command', "Get-CimInstance -ClassName Win32_VideoController | Select-Object -ExpandProperty Name"];
         } else if (platform === 'linux') {
-            command = 'lspci | grep -i vga';
+            command = 'lspci';
+            args = ['-i', 'vga'];
         } else {
             return resolve(null);
         }
 
-        exec(command, (error, stdout) => {
-            if (error) {
+        const proc = spawn(command, args);
+        let stdout = '';
+        proc.stdout.on('data', (data) => stdout += data.toString());
+        proc.on('close', () => {
+             if (!stdout) {
                 console.log('[GPU Vendor] Command to detect GPU failed');
                 return resolve(null);
             }
@@ -26,17 +31,22 @@ function getGpuVendor() {
             if (output.includes('intel')) return resolve('INTEL');
             resolve(null);
         });
+        proc.on('error', () => resolve(null));
     });
 }
 
 function getFfmpegEncoders() {
     return new Promise((resolve, reject) => {
-        exec('ffmpeg -encoders', (error, stdout) => {
-            if (error) {
-                return reject(new Error('ffmpeg -encoders command failed'));
+        const ffmpeg = spawn('ffmpeg', ['-encoders']);
+        let stdout = '';
+        ffmpeg.stdout.on('data', (data) => stdout += data.toString());
+        ffmpeg.on('close', (code) => {
+            if (code !== 0) {
+                 return reject(new Error('ffmpeg -encoders command failed'));
             }
             resolve(stdout);
         });
+        ffmpeg.on('error', (err) => reject(new Error(`Failed to start ffmpeg: ${err.message}`)));
     });
 }
 

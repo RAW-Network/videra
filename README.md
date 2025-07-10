@@ -1,6 +1,7 @@
 # ✨ Videra Video Compressor
 
-An ultra-modern, professional-grade video compression tool, built for performance, security, and scalability
+Videra is a modern and powerful video compression tool made for speed privacy and ease of use
+It works great for both casual users and professionals giving smooth results with a simple experience
 
 ---
 
@@ -12,17 +13,23 @@ An ultra-modern, professional-grade video compression tool, built for performanc
 
 ## ✨ Features
 
-* 🎯 **Smart Target Compression**: Achieve your desired file size without compromising quality. Videra uses two-pass FFmpeg encoding to intelligently calculate the optimal bitrate, delivering excellent results with minimal file size
-  
-* 🚀 **GPU Acceleration**: Enjoy lightning-fast performance with support for NVIDIA (NVENC), AMD (AMF/VA-API), and Intel (QSV/VA-API) hardware encoders. Videra automatically falls back to CPU if no GPU is available, ensuring universal compatibility
-  
-* 💻 **Modern UI**: A sleek, single-purpose interface built with HTML5, CSS3, and vanilla JavaScript. Videra emphasizes usability and clarity with a dark theme and responsive layout that works across devices
-  
-* 📊 **Live Progress Feedback**: Users can track compression in real time, thanks to direct integration with FFmpeg's logging output during both Pass 1 (analysis) and Pass 2 (compression)
-  
-* 🐳 **Docker Optimized**: Built for portability and security, Videra is deployed using a multi-stage Dockerfile that produces a lean production image, running as a non-root user by default
-  
-* 🧹 **Auto Cleanup**: To protect user privacy and save disk space, all compressed files are automatically deleted after 1 hour. In addition, orphaned files in uploads, compressed, and logs directories are cleaned at every server startup
+* 🎯 **Target File Size**
+Choose how small you want your video and Videra will keep the quality while reducing the size
+
+* 🚀 **Faster with GPU Support**
+Speeds up the process using your graphics card when available but still works well without it
+
+* 💻 **Simple Clean Modern Interface**
+Easy to use with a dark theme that looks great on computers tablets and phones
+
+* 📊 **Live Progress Tracking**
+Shows you the compression progress in real time so you always know what’s going on
+
+* 🐳 **Runs Anywhere Without Setup**
+Videra is ready to use in different environments with no extra steps or configurations
+
+* 🧹 **Automatic Cleanup for Privacy and Space**
+Your videos are deleted after one hour and unused files are removed when the app starts
 
 ---
 
@@ -96,14 +103,6 @@ Customize the application using environment variables in `docker-compose.yml`
 | `FORCE_CPU_ENCODER`     | Set to `true` to force software encoding | false   |
 | `TZ`                    | Sets the container's timezone            | UTC     |
 
-Example:
-
-```yaml
-environment:
-  - MAX_VIDEO_UPLOAD_SIZE=1G
-  - FORCE_CPU_ENCODER=true
-  - TZ=Asia/Makassar
-```
 
 ---
 

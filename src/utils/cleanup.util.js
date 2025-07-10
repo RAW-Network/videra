@@ -1,29 +1,35 @@
 const fsp = require('fs/promises');
 const path = require('path');
-const config = require('../config');
 
 async function cleanupDirectoryOnBoot(directoryPath, directoryName) {
     console.log(`[Startup Cleanup] Cleaning ${directoryName} directory`);
     try {
-        const files = await fsp.readdir(directoryPath);
-        if (files.length === 0) {
-            console.log(`[Startup Cleanup] No files to clean in ${directoryName} directory`);
+        const items = await fsp.readdir(directoryPath);
+        if (items.length === 0) {
+            console.log(`[Startup Cleanup] No items to clean in ${directoryName} directory`);
             return;
         }
-        
+
         let deletedCount = 0;
-        for (const file of files) {
-            if (file.startsWith('.')) continue;
-            
-            const filePath = path.join(directoryPath, file);
-            await fsp.unlink(filePath);
+        for (const item of items) {
+            if (item.startsWith('.')) continue;
+
+            const itemPath = path.join(directoryPath, item);
+            const stats = await fsp.stat(itemPath);
+
+            if (stats.isDirectory()) {
+                await fsp.rm(itemPath, { recursive: true, force: true });
+            } else {
+                await fsp.unlink(itemPath);
+            }
+
             deletedCount++;
         }
-        
+
         if (deletedCount > 0) {
-            console.log(`[Startup Cleanup] Successfully deleted ${deletedCount} file(s) from ${directoryName} directory`);
+            console.log(`[Startup Cleanup] Successfully cleaned ${deletedCount} item(s) from ${directoryName} directory`);
         } else {
-            console.log(`[Startup Cleanup] No files needed cleaning in ${directoryName} directory`);
+            console.log(`[Startup Cleanup] No items needed cleaning in ${directoryName} directory`);
         }
 
     } catch (error) {

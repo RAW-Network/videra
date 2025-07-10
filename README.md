@@ -15,19 +15,14 @@ It works great for both casual users and professionals giving smooth results wit
 
 * 🎯 **Target File Size**
 Choose how small you want your video and Videra will keep the quality while reducing the size
-
 * 🚀 **Faster with GPU Support**
 Speeds up the process using your graphics card when available but still works well without it
-
 * 💻 **Simple Clean Modern Interface**
 Easy to use with a dark theme that looks great on computers tablets and phones
-
 * 📊 **Live Progress Tracking**
 Shows you the compression progress in real time so you always know what’s going on
-
 * 🐳 **Runs Anywhere Without Setup**
 Videra is ready to use in different environments with no extra steps or configurations
-
 * 🧹 **Automatic Cleanup for Privacy and Space**
 Your videos are deleted after one hour and unused files are removed when the app starts
 

@@ -29,10 +29,7 @@ app.use((err, req, res, next) => {
         return next(err);
     }
 
-    const isProduction = process.env.NODE_ENV === 'production';
-    res.status(500).json({ 
-        error: isProduction ? 'An unexpected server error occurred' : err.message 
-    });
+    res.status(500).json({ error: 'An unexpected server error occurred' });
 });
 
 module.exports = app;

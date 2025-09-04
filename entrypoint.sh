@@ -19,10 +19,5 @@ chown -R videra:videra /uploads
 chown -R videra:videra /compressed
 chown -R videra:videra /logs
 
-# Grant GPU access to the videra user
-if [ -d "/dev/dri" ]; then
-    chown -R videra:videra /dev/dri
-fi
-
 # Execute the main command using dumb-init and su-exec
 exec /usr/bin/dumb-init -- su-exec videra "$@"

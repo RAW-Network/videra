@@ -1,0 +1,17 @@
+services:
+  videra:
+    build: .
+    container_name: videra
+    ports:
+      - 3000:3000
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - ./compressed:/compressed
+      - ./uploads:/uploads
+      - ./logs:/logs
+    environment:
+      - MAX_VIDEO_UPLOAD_SIZE=1G
+      - GPU=true
+      - TZ=UTC
+    restart: unless-stopped

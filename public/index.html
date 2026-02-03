@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="VIDERA">
+    <meta property="og:description" content="An ultra-modern video compression tool">
+    <meta property="og:type" content="website">
+    <title>Videra | Video Compression</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <a href="/" class="logo" aria-label="Videra Homepage">
+            <img src="/favicon.ico" alt="Videra Logo" class="logo-icon">
+            <span class="logo-text">VIDERA</span>
+        </a>
+        <div class="theme-switcher">
+            <input type="checkbox" id="theme-toggle" class="theme-toggle-checkbox">
+            <label for="theme-toggle" class="theme-toggle-label">
+                <svg class="theme-icon theme-icon-light" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                <svg class="theme-icon theme-icon-dark" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <span class="theme-toggle-handle"></span>
+            </label>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <div id="app-container" class="app-container">
+            </div>
+        <footer class="main-footer">
+            <a href="https://github.com/raw-network/videra" target="_blank" rel="noopener noreferrer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6.1 0-1.3-.5-2.4-1.3-3.2.4-.3.5-1.2.2-2.2 0 0-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1c-.3 1-.2 1.9.2 2.2C4.8 6.1 4.3 7.2 4.3 8.5c0 4.7 2.7 5.8 5.5 6.1-.6.5-.9 1.2-.9 2.2V22"></path></svg>
+                <span>Github Videra</span>
+            </a>
+        </footer>
+    </main>
+
+    <script src="app.js"></script>
+
+    <template id="upload-view-template">
+        <div class="view" id="upload-view">
+            <header class="view-header">
+                <h1>Compress Video</h1>
+                <p>Compress videos quickly without losing quality. Fast secure, and reliable, save space and share</p>
+            </header>
+            <div class="features-list">
+                <span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    High Quality
+                </span>
+                <span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    Fast & Secure
+                </span>
+                <span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    Save Storage
+                </span>
+            </div>
+            
+            <label for="fileElem" id="drop-area" class="drop-area" tabindex="0" role="button" aria-label="Drag and drop a file or click here to choose a file">
+                <div class="drop-area-content">
+                    <svg class="drop-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="12" y2="12"></line><line x1="15" y1="15" x2="12" y2="12"></line></svg>
+                    <p class="drop-text">Drop file or click here</p>
+                </div>
+            </label>
+            
+            <input type="file" id="fileElem" name="video" accept="video/*,.mp4,.mov,.avi,.mkv,.webm,.flv,.wmv,video/x-matroska" class="file-input">
+            
+            <label for="fileElem" id="upload-btn-label" class="btn btn-primary" tabindex="0" role="button">
+                <span>Upload Video</span>
+            </label>
+        </div>
+    </template>
+
+    <template id="settings-view-template">
+        <div class="view" id="settings-view">
+             <header class="view-header">
+                <h1>Compress Video</h1>
+            </header>
+             <div id="file-info" class="file-info"></div>
+             <div class="setting-group">
+                <label for="maxSize">Set target size</label>
+                <div class="input-group">
+                    <input type="number" id="maxSize" name="maxSize" value="50" min="1">
+                    <span>MB</span>
+                </div>
+            </div>
+            <button type="submit" id="compressBtn" class="btn btn-primary">
+                <span>Upload Video</span>
+            </button>
+            <button type="button" id="backBtn" class="btn btn-secondary">Choose another file</button>
+        </div>
+    </template>
+
+    <template id="progress-view-template">
+        <div class="view" id="progress-view" aria-live="polite" aria-atomic="true">
+            <header class="view-header">
+                <h1>Compress Video</h1>
+            </header>
+            
+            <div id="progress-file-info" class="file-info"></div>
+
+            <div class="progress-details">
+                <p class="loading-text">Uploading...</p>
+                <h2 id="progress-text" class="progress-percentage-text">0%</h2>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-bar-inner" id="progress-bar-inner"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="done-view-template">
+        <div class="view" id="done-view" aria-live="polite" aria-atomic="true">
+            <header class="view-header">
+                <h1>Compress Video</h1>
+            </header>
+
+            <div id="original-file-info-done" class="file-info" style="display: none;"></div>
+            
+            <h2 id="done-title" class="done-message"></h2>
+            
+            <p id="done-description" class="done-description"></p>
+
+            <div id="new-file-info-done" class="file-info compressed" style="display: none;"></div>
+
+            <a href="#" id="downloadBtn" class="btn btn-primary" download style="display: none;">
+                Download Video
+                <span class="saved-chip" id="saved-chip"></span>
+            </a>
+            <button type="button" id="resetBtn" class="btn btn-secondary">Choose another file</button>
+        </div>
+    </template>
+
+</body>
+</html>

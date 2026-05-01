@@ -13,26 +13,16 @@ function getVideoMetadata(inputPath) {
         let metadataOutput = '';
         let errorOutput = '';
 
-        ffprobe.stdout.on('data', (data) => {
-            metadataOutput += data.toString();
-        });
-
-        ffprobe.stderr.on('data', (data) => {
-            errorOutput += data.toString();
-        });
+        ffprobe.stdout.on('data', (data) => { metadataOutput += data.toString(); });
+        ffprobe.stderr.on('data', (data) => { errorOutput += data.toString(); });
 
         ffprobe.on('close', (code) => {
             if (code === 0) {
-                try {
-                    const duration = parseFloat(metadataOutput.trim());
-
-                    if (isNaN(duration) || duration <= 0) {
-                        reject(new Error('Could not determine valid video duration'));
-                    } else {
-                        resolve({ duration });
-                    }
-                } catch (e) {
-                     reject(new Error('Failed to parse ffprobe metadata output.'));
+                const duration = parseFloat(metadataOutput.trim());
+                if (isNaN(duration) || duration <= 0) {
+                    reject(new Error('Could not determine valid video duration'));
+                } else {
+                    resolve({ duration });
                 }
             } else {
                 reject(new Error(`ffprobe failed with code ${code}: ${errorOutput}`));

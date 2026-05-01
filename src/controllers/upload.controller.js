@@ -8,7 +8,7 @@ async function handleChunkUpload(req, res) {
     try {
         const { uploadId } = req.body;
         const chunkPath = req.file.path;
-        
+
         const tempUploadDir = path.join(config.paths.uploads, uploadId);
         await fsp.mkdir(tempUploadDir, { recursive: true });
 
@@ -24,6 +24,7 @@ async function handleChunkUpload(req, res) {
     }
 }
 
+/** Merge all chunks into single file, then create compression job */
 async function handleUploadComplete(req, res) {
     const { totalChunks, uploadId, originalName, targetSizeMB } = req.body;
     
@@ -36,7 +37,7 @@ async function handleUploadComplete(req, res) {
 
     try {
         console.log(`[Upload Complete] Starting to merge ${totalChunks} chunks for ${uploadId}`);
-        
+
         const writeStream = require('fs').createWriteStream(finalFilePath);
         for (let i = 0; i < totalChunks; i++) {
             const chunkPath = path.join(tempUploadDir, `${i}.chunk`);
@@ -53,7 +54,7 @@ async function handleUploadComplete(req, res) {
         
         await fsp.rmdir(tempUploadDir);
         console.log(`[Upload Complete] File merged successfully: ${finalFilePath}`);
-        
+
         const { duration } = await getVideoMetadata(finalFilePath);
         const jobData = {
             inputPath: finalFilePath,
@@ -75,6 +76,7 @@ async function handleUploadComplete(req, res) {
     }
 }
 
+/** SSE endpoint — starts compression and streams progress to client */
 function handleStream(req, res) {
     const { jobId } = req.params;
     const { job, runCompression } = getJobStream(jobId);

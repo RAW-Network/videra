@@ -1,6 +1,6 @@
 {
   "name": "videra",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Videra Video Compressor",
   "main": "src/index.js",
   "scripts": {
@@ -11,11 +11,11 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "dotenv": "^17.2.4",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "multer": "^2.0.2"
+    "multer": "^2.1.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "nodemon": "^3.1.14"
   }
 }

@@ -1,0 +1,76 @@
+.main-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: saturate(1.3) blur(12px);
+  -webkit-backdrop-filter: saturate(1.3) blur(12px);
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 clamp(16px, 3vw, 28px);
+  height: var(--header-h);
+  transition: background var(--speed), border-color var(--speed);
+}
+
+/* Logo */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: clamp(18px, 2.2vw, 21px);
+  color: var(--text);
+  letter-spacing: -0.5px;
+  transition: color var(--speed);
+}
+
+.logo-icon { width: 30px; height: 30px; border-radius: 8px; }
+
+/* Logo keeps original colors in both themes */
+
+/* Theme toggle — pill-shaped switch with sun/moon icons */
+.theme-switcher { display: inline-flex; align-items: center; }
+.theme-toggle-checkbox { display: none; }
+
+.theme-toggle-label {
+  width: 52px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5px;
+  background: var(--accent-gradient);
+  cursor: pointer;
+  position: relative;
+  transition: background var(--speed);
+}
+
+.theme-icon { width: 16px; height: 16px; color: rgba(255,255,255,0.8); pointer-events: none; flex-shrink: 0; }
+
+/* Sliding handle */
+.theme-toggle-handle {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  transition: transform 0.35s cubic-bezier(0.2, 1, 0.3, 1);
+}
+
+/* Slide handle right when checked (dark mode) */
+.theme-toggle-checkbox:checked + .theme-toggle-label .theme-toggle-handle {
+  transform: translateX(24px);
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+  .main-header { padding: 0 14px; }
+  .logo { gap: 8px; font-size: 17px; }
+  .logo-icon { width: 26px; height: 26px; }
+}

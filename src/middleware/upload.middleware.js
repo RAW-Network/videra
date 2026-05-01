@@ -4,9 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const maxUploadSizeBytes = (() => {
-    if (config.maxUploadSize === null) {
-        return Infinity;
-    }
+    if (config.maxUploadSize === null) return Infinity;
     const size = parseFloat(config.maxUploadSize);
     const unit = config.maxUploadSize.toUpperCase().slice(-1);
     if (unit === 'G') return size * 1024 * 1024 * 1024;

@@ -33,12 +33,8 @@ const execAsync = (cmd) => new Promise((resolve) => {
 });
 
 const hasAccess = (p) => {
-  try {
-    fs.accessSync(p, fs.constants.R_OK | fs.constants.W_OK);
-    return true;
-  } catch {
-    return false;
-  }
+  try { fs.accessSync(p, fs.constants.R_OK | fs.constants.W_OK); return true; }
+  catch { return false; }
 };
 
 const getEncoders = async () => {
@@ -56,22 +52,17 @@ const getVendor = async () => {
 const getSortedRenderDevices = () => {
   const base = '/dev/dri';
   if (!fs.existsSync(base)) return [];
-  
   try {
     return fs.readdirSync(base)
       .filter((f) => f.startsWith('renderD'))
-      .map((f) => ({
-        path: path.join(base, f),
-        index: parseInt(f.replace('renderD', ''), 10)
-      }))
+      .map((f) => ({ path: path.join(base, f), index: parseInt(f.replace('renderD', ''), 10) }))
       .sort((a, b) => b.index - a.index)
       .map(item => item.path)
       .filter(hasAccess);
-  } catch {
-    return [];
-  }
+  } catch { return []; }
 };
 
+/** Detect GPU and select best H.264 encoder, fallback to CPU */
 async function detectGpuAndEncoder() {
   if (!config.useGpu) return CPU_PROFILE;
 
@@ -101,10 +92,7 @@ async function detectGpuAndEncoder() {
     const vendor = await getVendor();
     if (vendor) {
       const match = PROFILES.find(
-        (p) =>
-          p.vendor === vendor &&
-          (!p.platform || p.platform === platform) &&
-          encoders.includes(p.check)
+        (p) => p.vendor === vendor && (!p.platform || p.platform === platform) && encoders.includes(p.check)
       );
       if (match) return match.result;
     }

@@ -17,6 +17,7 @@ function createCompressionJob(jobData) {
     return jobId;
 }
 
+/** Run 2-pass FFmpeg compression, send progress via SSE */
 function getJobStream(jobId) {
     const job = jobs[jobId];
     if (!job || job.status !== 'pending') {
@@ -56,6 +57,7 @@ function getJobStream(jobId) {
     return { job, runCompression };
 }
 
+/** Delete compressed output after 1 hour */
 function scheduleAutoCleanup(outputPath, jobId, outputFilename) {
     setTimeout(() => {
         console.log(`[Auto Cleanup] Deletion for job ${jobId} scheduled in 1 hour: ${outputFilename}`);
@@ -71,11 +73,10 @@ function scheduleAutoCleanup(outputPath, jobId, outputFilename) {
     }, 3600 * 1000);
 }
 
+/** Kill ffmpeg, delete temp files, remove job from store */
 async function cleanupJob(jobId) {
     const currentJob = jobs[jobId];
-    if (!currentJob || currentJob.status === 'cleaning') {
-        return;
-    }
+    if (!currentJob || currentJob.status === 'cleaning') return;
 
     currentJob.status = 'cleaning';
     console.log(`[Job Cleanup] Starting cleanup for job ${jobId}`);

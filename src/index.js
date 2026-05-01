@@ -7,13 +7,13 @@ const { cleanupDirectoryOnBoot } = require('./utils/cleanup.util');
 
 async function startServer() {
     console.log('[Server] Initializing...');
-    
+
     await cleanupDirectoryOnBoot(config.paths.uploads, 'Uploads');
     await cleanupDirectoryOnBoot(config.paths.compressed, 'Compressed');
     await cleanupDirectoryOnBoot(config.paths.logs, 'Logs');
 
     const encoderSettings = await detectGpuAndEncoder();
-    
+
     app.set('encoderSettings', encoderSettings);
 
     app.listen(config.port, () => {

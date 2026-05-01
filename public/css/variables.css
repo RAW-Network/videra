@@ -1,0 +1,79 @@
+:root {
+  /* Typography */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* Shape & Motion */
+  --radius: 16px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
+  --speed: 0.25s;
+  --header-h: 64px;
+
+  /* Light Theme Colors */
+  --bg: #f0f2f5;
+  --bg-gradient: linear-gradient(145deg, #eef1f5 0%, #dfe4ea 50%, #d1d8e0 100%);
+  --surface: rgba(255, 255, 255, 0.82);          /* Card background */
+  --surface-solid: #ffffff;
+  --surface-hover: rgba(255, 255, 255, 0.95);
+  --border: rgba(0, 0, 0, 0.07);
+  --border-hover: rgba(99, 102, 241, 0.35);
+
+  --text: #1a1a2e;
+  --text-secondary: #64748b;
+
+  /* Accent (indigo-violet gradient) */
+  --accent: #6366f1;
+  --accent-hover: #4f46e5;
+  --accent-soft: rgba(99, 102, 241, 0.1);
+  --accent-glow: rgba(99, 102, 241, 0.25);
+  --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+
+  --input-bg: rgba(0, 0, 0, 0.03);
+  --input-border: rgba(0, 0, 0, 0.08);
+
+  /* Status colors */
+  --success: #10b981;
+  --success-soft: rgba(16, 185, 129, 0.1);
+  --success-border: rgba(16, 185, 129, 0.3);
+  --error: #ef4444;
+  --error-soft: rgba(239, 68, 68, 0.1);
+
+  --header-bg: rgba(240, 242, 245, 0.85);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-btn: 0 4px 14px rgba(99, 102, 241, 0.35);
+  --shadow-btn-hover: 0 6px 20px rgba(99, 102, 241, 0.45);
+}
+
+/* Dark Theme — overrides light values */
+html[data-theme="dark"] {
+  --bg: #0b0d14;
+  --bg-gradient: linear-gradient(145deg, #0b0d14 0%, #131626 50%, #1a1e30 100%);
+  --surface: rgba(25, 29, 45, 0.65);
+  --surface-solid: #191d2d;
+  --surface-hover: rgba(30, 35, 55, 0.85);
+  --border: rgba(255, 255, 255, 0.06);
+  --border-hover: rgba(129, 140, 248, 0.4);
+
+  --text: #f1f5f9;
+  --text-secondary: #94a3b8;
+
+  --accent: #818cf8;
+  --accent-hover: #6366f1;
+  --accent-soft: rgba(129, 140, 248, 0.12);
+  --accent-glow: rgba(129, 140, 248, 0.3);
+  --accent-gradient: linear-gradient(135deg, #818cf8, #a78bfa);
+
+  --input-bg: rgba(255, 255, 255, 0.04);
+  --input-border: rgba(255, 255, 255, 0.08);
+
+  --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.12);
+  --success-border: rgba(52, 211, 153, 0.3);
+  --error: #f87171;
+  --error-soft: rgba(248, 113, 113, 0.12);
+
+  --header-bg: rgba(11, 13, 20, 0.8);
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  --shadow-btn: 0 4px 14px rgba(129, 140, 248, 0.3);
+  --shadow-btn-hover: 0 6px 20px rgba(129, 140, 248, 0.4);
+}

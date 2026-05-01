@@ -1,5 +1,6 @@
 const { spawn } = require('child_process');
 
+/** Spawn ffmpeg, parse progress from stderr, report via sendEvent */
 function runFfmpeg(args, job, sendEvent, progressOffset = 0, passText = 'Processing') {
     return new Promise((resolve, reject) => {
         console.log(`[FFmpeg] Job ${job.id} spawning command: ffmpeg ${args.join(' ')}`);
@@ -18,7 +19,7 @@ function runFfmpeg(args, job, sendEvent, progressOffset = 0, passText = 'Process
         ffmpeg.stderr.on('data', (data) => {
             const chunk = stderrBuffer + data.toString();
             const lines = chunk.split('\n');
-            stderrBuffer = lines.pop(); 
+            stderrBuffer = lines.pop();
 
             let current_us = -1;
 
